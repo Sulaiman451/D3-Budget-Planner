@@ -24,6 +24,7 @@ const arcPath = d3
   .outerRadius(dims.radius)
   .innerRadius(dims.radius / 2);
 
+// ordinal colour scale
 const colour = d3.scaleOrdinal(d3["schemeSet3"]);
 
 // legend setup
@@ -31,14 +32,30 @@ const legendGroup = svg
   .append("g")
   .attr("transform", `translate(${dims.width + 40}, 10)`);
 
-const legend = d3.legendColor().shape("circle").shapePadding(10).scale(colour);
+const legend = d3
+  .legendColor()
+  .shape("path", d3.symbol().type(d3.symbolCircle)())
+  .shapePadding(10)
+  .scale(colour);
+
+const tip = d3
+  .tip()
+  .attr("class", "tip card")
+  .html((d) => {
+    let content = `<div class="name">${d.data.name}</div>`;
+    content += `<div class="cost">£${d.data.cost}</div>`;
+    content += `<div class="delete">Click slice to delete</div>`;
+    return content;
+  });
+
+graph.call(tip);
 
 // update function
 const update = (data) => {
   // update colour scale domain
   colour.domain(data.map((d) => d.name));
 
-  // update and call legend
+  // update legend
   legendGroup.call(legend);
   legendGroup.selectAll("text").attr("fill", "white");
 
@@ -49,19 +66,15 @@ const update = (data) => {
   paths.exit().transition().duration(750).attrTween("d", arcTweenExit).remove();
 
   // handle the current DOM path updates
-  paths
-    .attr("d", arcPath)
-    .transition()
-    .duration(750)
-    .attrTween("d", arcTweenUpdate);
+  paths.transition().duration(750).attrTween("d", arcTweenUpdate);
 
   paths
     .enter()
     .append("path")
     .attr("class", "arc")
-    .attr("d", arcPath)
     .attr("stroke", "#fff")
     .attr("stroke-width", 3)
+    .attr("d", arcPath)
     .attr("fill", (d) => colour(d.data.name))
     .each(function (d) {
       this._current = d;
@@ -73,8 +86,14 @@ const update = (data) => {
   // add events
   graph
     .selectAll("path")
-    .on("mouseover", handleMouseOver)
-    .on("mouseout", handleMouseOut)
+    .on("mouseover", (d, i, n) => {
+      tip.show(d, n[i]);
+      handleMouseOver(d, i, n);
+    })
+    .on("mouseout", (d, i, n) => {
+      tip.hide();
+      handleMouseOut(d, i, n);
+    })
     .on("click", handleClick);
 };
 
@@ -108,7 +127,7 @@ db.collection("expenses")
   });
 
 const arcTweenEnter = (d) => {
-  var i = d3.interpolate(d.endAngle, d.startAngle);
+  var i = d3.interpolate(d.endAngle - 0.1, d.startAngle);
 
   return function (t) {
     d.startAngle = i(t);
@@ -130,15 +149,17 @@ function arcTweenUpdate(d) {
   // interpolate between the two objects
   var i = d3.interpolate(this._current, d);
   // update the current prop with new updated data
-  this._current = i(d);
+  this._current = i(1);
 
   return function (t) {
+    // i(t) returns a value of d (data object) which we pass to arcPath
     return arcPath(i(t));
   };
 }
 
 // event handlers
 const handleMouseOver = (d, i, n) => {
+  //console.log(n[i]);
   d3.select(n[i])
     .transition("changeSliceFill")
     .duration(300)
@@ -146,6 +167,7 @@ const handleMouseOver = (d, i, n) => {
 };
 
 const handleMouseOut = (d, i, n) => {
+  //console.log(n[i]);
   d3.select(n[i])
     .transition("changeSliceFill")
     .duration(300)
