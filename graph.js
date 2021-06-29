@@ -1,6 +1,7 @@
 const dims = { height: 300, width: 300, radius: 150 };
 const cent = { x: dims.width / 2 + 5, y: dims.height / 2 + 5 };
 
+// create svg container
 const svg = d3
   .select(".canvas")
   .append("svg")
@@ -10,6 +11,7 @@ const svg = d3
 const graph = svg
   .append("g")
   .attr("transform", `translate(${cent.x}, ${cent.y})`);
+// translates the graph group to the middle of the svg container
 
 const pie = d3
   .pie()
@@ -24,31 +26,45 @@ const arcPath = d3
 
 // update function
 const update = (data) => {
-  console.log(data);
+  // join enhanced (pie) data to path elements
+  const paths = graph.selectAll("path").data(pie(data));
+
+  console.log(paths);
+
+  paths
+    .enter()
+    .append("path")
+    .attr("class", "arc")
+    .attr("d", arcPath)
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 3);
 };
 
 // data array and firestore
 var data = [];
 
-db.collection("expenses").onSnapshot((res) => {
-  res.docChanges().forEach((change) => {
-    const doc = { ...change.doc.data(), id: change.doc.id };
+db.collection("expenses")
+  .orderBy("cost")
+  .onSnapshot((res) => {
+    res.docChanges().forEach((change) => {
+      const doc = { ...change.doc.data(), id: change.doc.id };
 
-    switch (change.type) {
-      case "added":
-        data.push(doc);
-        break;
-      case "modified":
-        const index = data.findIndex((item) => item.id == doc.id);
-        data[index] = doc;
-        break;
-      case "removed":
-        data = data.filter((item) => item.id !== doc.id);
-        break;
-      default:
-        break;
-    }
+      switch (change.type) {
+        case "added":
+          data.push(doc);
+          break;
+        case "modified":
+          const index = data.findIndex((item) => item.id == doc.id);
+          data[index] = doc;
+          break;
+        case "removed":
+          data = data.filter((item) => item.id !== doc.id);
+          break;
+        default:
+          break;
+      }
+    });
+
+    // call the update function
+    update(data);
   });
-
-  update(data);
-});
