@@ -3,3 +3,8 @@ This project is a budget planner which shows where money is being spent in the f
 
 This is essentially the same as what is in Net Ninja's Udemy course "Build Data Vizualisations with D3.js & Firebase", though the design is somewhat different in this repo.
 
+# What it looks like
+![alt text](screenshots/screenshot (6).png "How the project looks")
+
+# Getting Started
+There are no dependancies in this project, so it can be run with the Live Server extension in VS Code.
