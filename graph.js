@@ -15,6 +15,7 @@ const pie = d3
   .pie()
   .sort(null)
   .value((d) => d.cost);
+// the value we are evaluating to create the pie angles
 
 const angles = pie([
   { name: "rent", cost: 500 },
@@ -22,4 +23,9 @@ const angles = pie([
   { name: "gaming", cost: 200 },
 ]);
 
-console.log(angles);
+const arcPath = d3
+  .arc()
+  .outerRadius(dims.radius)
+  .innerRadius(dims.radius / 2);
+
+console.log(arcPath(angles[0]));
