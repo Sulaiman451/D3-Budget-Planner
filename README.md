@@ -7,4 +7,4 @@ This is essentially the same as what is in Net Ninja's Udemy course "Build Data 
 ![Screenshot (6)](https://user-images.githubusercontent.com/70066475/123858150-15eb0400-d91b-11eb-9c64-2da8bbfcc5d6.png)
 
 # Getting Started
-There are no dependancies in this project, so it can be run with the Live Server extension in VS Code.
+There are no dependencies in this project, so it can be run with the Live Server extension in VS Code.
